@@ -1,0 +1,13 @@
+{
+    "name": "judithhuang/php-demo",
+    "description": "This is demo of resque",
+    "require": {
+        "chrisboulton/php-resque": "^1.2"
+    },
+    "authors": [
+        {
+            "name": "Judith Huang",
+            "email": "judithhuang@augmentum.com.cn"
+        }
+    ]
+}
