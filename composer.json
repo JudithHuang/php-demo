@@ -2,7 +2,8 @@
     "name": "judithhuang/php-demo",
     "description": "This is demo of resque",
     "require": {
-        "chrisboulton/php-resque": "^1.2"
+        "chrisboulton/php-resque": "dev-master",
+        "chrisboulton/php-resque-scheduler": "dev-master"
     },
     "authors": [
         {
