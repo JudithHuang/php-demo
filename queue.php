@@ -14,15 +14,13 @@ Resque::setBackend('127.0.0.1:6379');
 
 $args = array(
     'time' => time(),
-    'array' => array(
-        'test' => 'test',
-    ),
+    'name' => "Judith Huang"
 );
 
 // $jobId = Resque::enqueue('default', $argv[1], $args, true);
 // echo 'job Id'.$jobId;
 
 // php-resque-scheduler
-fwrite(STDOUT, "start a Job");
+fwrite(STDOUT, "start a Job \n");
 $in = 5;
 ResqueScheduler::enqueueIn($in, 'judith', $argv[1], $args);
