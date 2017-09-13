@@ -1,17 +1,5 @@
-# job logs
+# php-resque
 
-```shell
-php resqueWork.php
-```
+## [ppt]()
 
-# scheduler logs
-
-```shell
-php work.php
-```
-
-# add job to queue
-
-```shell
-php queue.php job
-```
+## [Demo 使用说明文档](/src/README.md)

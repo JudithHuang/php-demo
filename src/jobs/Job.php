@@ -1,5 +1,6 @@
 <?php
-class job
+
+class Job
 {
     /**
      * 执行任务的前置条件
@@ -11,8 +12,7 @@ class job
 
     public function perform()
     {
-        fwrite(STDOUT, "这里可以接受参数，比方说我们取一下name: ".$this->args["name"]."\n");
-        fwrite(STDOUT, "这里是具体的处理订单的逻辑代码 \n");
+        fwrite(STDOUT, "===> 这里可以接受参数，比方说我们取一下name: ".$this->args["name"]."\n");
     }
 
     /**
