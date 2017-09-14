@@ -1,4 +1,4 @@
-# php-resque
+# php-resque & php-resque-scheduler
 
 ## [ppt](https://judithhuang.github.io/php-demo/index.html#0)
 
