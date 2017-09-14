@@ -1,0 +1,361 @@
+<!--
+    Powered By nodeppt - This is probably the best web presentation tool so far!
+    version: 1.4.5
+    site: https://github.com/ksky521/nodeppt
+    date: 
+-->
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>php-resque - By Judith Huang</title>
+    <link rel="stylesheet" media="all" href="./css/nodeppt.css">
+    <link rel="stylesheet" media="only screen and (max-device-width: 480px)" href="./css/phone.css">
+    
+    <link rel="stylesheet" href="./js/highlight/styles/monokai_sublime.css">
+    <link rel="stylesheet" href="./css/font-awesome.css">
+    
+<link rel="stylesheet" href="./css/theme.moon.css">
+</head>
+<body>
+<div class="slides">
+    <slides id="container">
+        <slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
+<h1>php-resque</h1>
+<h1>php-resque-scheduler</h1>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
+<h1>php-resque</h1>
+<ul>
+<li>Resque is a Redis-backed library for creating background jobs, placing those jobs on one or more queues, and processing them later.</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
+<h1>Background</h1>
+<ul>
+<li>Resque was pioneered and is developed by the fine folks at GitHub, and written in Ruby. What you&#39;re seeing here is an almost direct port of the Resque worker and enqueue system to PHP.</li>
+<li>For more information on Resque, visit the official GitHub project: <a href="https://github.com/resque/resque" target="_blank">https://github.com/resque/resque</a></li>
+<li>For further information, see the launch post on the GitHub blog: <a href="http://github.com/blog/542-introducing-resque" target="_blank">http://github.com/blog/542-introducing-resque</a></li>
+<li>The PHP port does NOT include its own web interface for viewing queue stats, as the data is stored in the exact same expected format as the Ruby version of Resque.</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
+<h1>Features</h1>
+<ul>
+<li>Workers can be distributed between multiple machines</li>
+<li>Includes support for priorities (queues)</li>
+<li>Resilient to memory leaks (forking)</li>
+<li><p>Expects failure</p>
+</li>
+<li><p>Has the ability to track the status of jobs</p>
+</li>
+<li>Will mark a job as failed, if a forked child running a job does not exit with a status code as 0</li>
+<li>Has built in support for setUp and tearDown methods, called pre and post jobs</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
+<h1>Queue sytem</h1>
+<img src="./images/queue-system.jpg" alt="queue-system" title="queue-system1">
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
+<h1>Getting Started</h1>
+<ul>
+<li>Add php-resque to your application&#39;s composer.json.<pre><code class="json">
+"require": {
+  "chrisboulton/php-resque": "dev-master",
+  "chrisboulton/php-resque-scheduler": "dev-master"
+}
+</code></pre></li>
+<li>Run composer install.</li>
+<li>If you haven&#39;t already, add the Composer autoload to your project&#39;s initialization file.</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
+<h1>Jobs</h1>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article>
+<h2>Queueing Jobs</h2>
+<ul>
+<li>Jobs are queued as follows:<pre><code class="php">
+// Required if redis is located elsewhere
+Resque::setBackend('localhost:6379');
+$args = array('name' => 'Chris');
+Resque::enqueue('default', 'My_Job', $args);
+</code></pre></li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article>
+<h2>Defining Jobs</h2>
+<ul>
+<li><p>Each job should be in its own class, and include a <code>perform</code> method.</p>
+<pre><code class="php">
+class My_Job
+{
+  public function setUp()
+  {
+      // ... Set up environment for this job
+  }
+
+  public function perform()
+  {
+      // .. Run job
+  }
+
+  public function tearDown()
+  {
+      // ... Remove environment for this job
+  }
+}
+</code></pre></li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article>
+<h2>Dequeueing Jobs</h2>
+<ul>
+<li>This method can be used to conveniently remove a job from a queue.<pre><code class="php">
+// Removes job class 'My_Job' of queue 'default'
+Resque::dequeue('default', ['My_Job']);
+// Removes job class 'My_Job' with Job ID '087df5819a790ac666c9608e2234b21e' of queue 'default'
+Resque::dequeue('default', ['My_Job' => '087df5819a790ac666c9608e2234b21e']);
+// Removes job class 'My_Job' with arguments of queue 'default'
+Resque::dequeue('default', ['My_Job' => array('foo' => 1, 'bar' => 2)]);
+// Removes multiple jobs
+Resque::dequeue('default', ['My_Job', 'My_Job2']);
+</code></pre></li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article>
+<h2>Tracking Job Statuses</h2>
+<ul>
+<li>php-resque has the ability to perform basic status tracking of a queued job. The status information will allow you to check if a job is in the queue, is currently being run, has finished, or has failed.</li>
+<li>To track the status of a job, pass true as the fourth argument to <code>Resque::enqueue</code>. A token used for tracking the job status will be returned<pre><code class="php">
+$token = Resque::enqueue('default', 'My_Job', $args, true);
+echo $token;
+// To fetch the status of a job:
+$status = new Resque_Job_Status($token);
+echo $status->get(); // Outputs the status
+</code></pre></li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article>
+<h2>Job statuses</h2>
+<ul>
+<li>STATUS_WAITING: Job is still queued</li>
+<li>STATUS_RUNNING: Job is currently running</li>
+<li>STATUS_FAILED: Job has failed</li>
+<li>STATUS_COMPLETE: Job is complete</li>
+<li>false: Failed to fetch the status, is the token valid ?</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
+<h1>Workers</h1>
+<ul>
+<li>Resque workers are rake tasks that run forever.</li>
+</ul>
+<pre><code>
+// start a work
+QUEUE=file_serve php bin/resque
+// Running All Queues
+QUEUE='*' bin/resque
+// Running Multiple Workers
+COUNT=5 bin/resque
+// Custom prefix
+PREFIX=my-app-name bin/resque
+</code></pre>
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
+<h1>Event/Hook System</h1>
+<ul>
+<li>php-resque has a basic event system that can be used by your application to customize how some of the php-resque internals behave.</li>
+<li>You listen in on events (as listed below) by registering with <code>Resque_Event</code> and supplying a callback that you would like triggered when the event is raised:<pre><code>
+Resque_Event::listen('eventName', [callback]);
+</code></pre></li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article>
+<h2>Events</h2>
+<ul>
+<li>beforeFirstFork: Called once, as a worker initializes.</li>
+<li>beforeFork: Called before php-resque forks to run a job.</li>
+<li>afterFork: Called after php-resque forks to run a job (but before the job is run).</li>
+<li>beforePerform: Called before the setUp and perform methods on a job are run.</li>
+<li>afterPerform: Called after the perform and tearDown methods on a job are run.</li>
+<li>onFailure: Called whenever a job fails.</li>
+<li>beforeEnqueue: Called immediately before a job is enqueued using the Resque::enqueue method.</li>
+<li>afterEnqueue: Called after a job has been queued using the Resque::enqueue method.</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
+<h1>php-resque-scheduler</h1>
+<ul>
+<li>php-resque-scheduler is a PHP port of resque-scheduler, which adds support for scheduling items in the future to Resque.</li>
+<li>At the moment, php-resque-scheduler only supports delayed jobs, which is the ability to push a job to the queue and have it run at a certain timestamp, or in a number of seconds. Support for recurring jobs (similar to CRON) is planned for a future release.</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
+<h1>Delayed Jobs</h1>
+<ul>
+<li>Delayed jobs are one-off jobs that you want to be put into a queue at some point in the future. The classic example is sending an email<pre><code class="php">
+require 'Resque/Resque.php';
+require 'ResqueScheduler/ResqueScheduler.php';
+$in = 3600;
+$args = array('id' => $user->id);
+ResqueScheduler::enqueueIn($in, 'email', 'SendFollowUpEmail', $args);
+</code></pre></li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
+<h1>Delayed Jobs</h1>
+<ul>
+<li>Instead of passing a relative time in seconds, you can also supply a timestamp as either a DateTime object or integer containing a UNIX timestamp to the enqueueAt method:<pre><code>
+require 'Resque/Resque.php';
+require 'ResqueScheduler/ResqueScheduler.php';
+$time = 1332067214;
+ResqueScheduler::enqueueAt($time, 'email', 'SendFollowUpEmail', $args);
+$datetime = new DateTime('2012-03-18 13:21:49');
+ResqueScheduler::enqueueAt($datetime, 'email', 'SendFollowUpEmail', $args);
+</code></pre></li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
+<h1>Worker</h1>
+<ul>
+<li>Like resque, resque-scheduler includes a worker that runs in the background. This worker is responsible for pulling items off the schedule/delayed queue and adding them to the queue for resque. This means that for delayed or scheduled jobs to be executed, the worker needs to be running.</li>
+<li>A basic &quot;up-and-running&quot; resque-scheduler.php file is included that sets up a running worker environment is included in the root directory. It accepts many of the same environment variables as php-resque:</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
+<h1>Worker</h1>
+<ul>
+<li>REDIS_BACKEND: Redis server to connect to</li>
+<li>LOGGING: Enable logging to STDOUT</li>
+<li>VERBOSE: Enable verbose logging</li>
+<li>VVERBOSE: Enable very verbose logging</li>
+<li>INTERVAL: Sleep for this long before checking scheduled/delayed queues</li>
+<li>APP_INCLUDE: Include this file when starting (to launch your app)</li>
+<li>PIDFILE: Write the PID of the worker out to this file</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
+<h1>Event/Hook System</h1>
+<ul>
+<li>php-resque-scheduler uses the same event system used by php-resque and exposes the following events.</li>
+<li>afterSchedule: Called after a job has been added to the schedule.</li>
+<li>beforeDelayedEnqueue: Called immediately after a job has been pulled off the delayed queue and right before the job is added to the queue in resque.</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
+<h1>References</h1>
+<ul>
+<li><a href="https://github.com/chrisboulton/php-resque" target="_blank">php-resque</a></li>
+<li><a href="https://github.com/chrisboulton/php-resque-scheduler" target="_blank">php-resque-scheduler</a></li>
+<li><a href="https://icewing.cc/post/background-jobs-and-phpresque-2.html" target="_blank">PHP-Resque的使用</a></li>
+</ul>
+
+</article></section></slide>
+        
+
+        <!-- <slide class="slide logoslide dark nobackground">
+            <article class="flexbox vcenter">
+                <h2 style="color: white;">Powered By nodeppt v1.4.5</h2>
+            </article>
+        </slide> -->
+        <div class="slideTip" id="tip"></div>
+    </slides>
+</div>
+<canvas id="drawBoard" class="draw-board" width="900" height="700"></canvas>
+<div class="progress"><span id="progress"></span></div>
+<div id="_buttons">
+    <div class="_btn-box" id="_btn-box" style="display:none;">
+        <button class="fa fa-arrow-circle-left" id="_btn-prev"></button>
+        <button class="fa fa-arrow-circle-right" id="_btn-next"></button>
+        <button class="fa fa-paint-brush" id="_btn-brush"></button>
+        <button class="fa fa-compress" id="_btn-overview" data-toggle="fa fa-expand"></button>
+    </div>
+    <button class="fa fa-bars" id="_btn-bar"  data-toggle="fa fa-close"></button>
+</div>
+<script src="./js/mixjs/lib/mix.0.3.0.min.js"></script>
+<script>
+    var ASSET_RELATIVE_DIR = ".";
+</script>
+<script>
+var base = location.protocol + '//' + location.host;
+
+var path = (location.pathname + '#').split('/').filter(function(v){
+    return !!v;
+});
+path.pop();
+path = path.join('/');
+if (typeof ASSET_RELATIVE_DIR === 'string') {
+    path = path + '/' + ASSET_RELATIVE_DIR;
+}
+MixJS.config({
+    baseURL: [ base, path, 'js'].join('/')+'/'
+});
+
+</script>
+<script src="./js/mixjs/lib/event/broadcast.js"></script>
+<script src="./js/nodeppt.js"></script>
+<script>
+Slide.init({
+    containerID: 'container',
+    drawBoardID: 'drawBoard',
+    slideClass: '.slide',
+    buildClass: '.build',
+    progressID: 'progress',
+    transition: 'slide',
+    width: 1100,
+    dir: './',
+    
+    //打开下面的注释就开启postMessage方式
+    //访问网址127.0.0.1:8080/ppt/demo#client
+    control:{
+        type: 'postMessage',
+        args:{
+            isControl:  false
+        }
+    },
+    
+    tipID: 'tip'
+});
+MixJS.loadJS('highlight/highlight.pack.js',function(){
+    hljs.tabReplace = '  ';
+    hljs.initHighlightingOnLoad();
+});
+</script>
+<script src="./js/demo.js"></script>
+<link rel="stylesheet" href="./css/demo.css">
+<script src="./js/zoom.js"></script>
+
+<!-- MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+  config: ["TeX-AMS-MML_HTMLorMML.js"],
+  tex2jax: {inlineMath: [['\\(','\\)']]}});
+  //['$','$'], 避免货币价格冲突
+</script>
+<script type="text/javascript" src="./js/mathjax/MathJax.js"></script>
+
+<!--placeholder-->
+</body>
+</html>
