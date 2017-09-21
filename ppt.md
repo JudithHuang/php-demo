@@ -24,18 +24,6 @@ usemathjax: yes
 - The PHP port does NOT include its own web interface for viewing queue stats, as the data is stored in the exact same expected format as the Ruby version of Resque.
 
 [slide]
-# Features
-
-- Workers can be distributed between multiple machines
-- Includes support for priorities (queues)
-- Resilient to memory leaks (forking)
-- Expects failure
-
-- Has the ability to track the status of jobs
-- Will mark a job as failed, if a forked child running a job does not exit with a status code as 0
-- Has built in support for setUp and tearDown methods, called pre and post jobs
-
-[slide]
 # Queue sytem
 
 ![queue-system](/images/queue-system.jpg "queue-system1")
@@ -57,19 +45,46 @@ usemathjax: yes
 
 [slide]
 ## Queueing Jobs
-- Jobs are queued as follows:
+
+Jobs are queued as follows:
+
 <pre><code class="php">
 // Required if redis is located elsewhere
 Resque::setBackend('localhost:6379');
-$args = array('name' => 'Chris');
-Resque::enqueue('default', 'My_Job', $args);
+$args = array('name' => 'Judith');
+Resque::enqueue('default', 'Job', $args);
+</code></pre>
+
+Storage in Redis
+
+<pre><code class="shell">
+127.0.0.1:6379> keys *
+1) "resque:job:6e72d0a153aa55df600e5856c85dbf06:status"
+2) "resque:queue:default"
+3) "resque:job:838bdb9a4bb550cb7d9baacd54b42476:status"
+4) "resque:queues"
+5) "resque:job:b10f67f4a41578255f58afdf31632f7e:status"
+6) "resque:queue:queue-2"
+127.0.0.1:6379> type resque:queues
+set
+127.0.0.1:6379> type resque:queue:default
+list
+127.0.0.1:6379> SMEMBERS resque:queues
+1) "default"
+2) "queue-2"
+127.0.0.1:6379> LRANGE resque:queue:queue-2 0 -1
+1) "{\"class\":\"Job\",\"args\":[{\"name\":\"Judith Huang\"}],\"id\":\"6e72d0a153aa55df600e5856c85dbf06\",\"queue_time\":1505993824.68912}"
+127.0.0.1:6379> LRANGE resque:queue:default 0 -1
+1) "{\"class\":\"Job\",\"args\":[{\"name\":\"Judith Huang\"}],\"id\":\"b10f67f4a41578255f58afdf31632f7e\",\"queue_time\":1505993558.822553}"
+2) "{\"class\":\"Job\",\"args\":[{\"name\":\"Judith Huang\"}],\"id\":\"838bdb9a4bb550cb7d9baacd54b42476\",\"queue_time\":1505993776.0565}"
+127.0.0.1:6379> 
 </code></pre>
 
 [slide]
 ## Defining Jobs
 - Each job should be in its own class, and include a `perform` method.
 <pre><code class="php">
-class My_Job
+class Job
 {
     public function setUp()
     {
@@ -90,16 +105,33 @@ class My_Job
 
 [slide]
 ## Dequeueing Jobs
-- This method can be used to conveniently remove a job from a queue.
+This method can be used to conveniently remove a job from a queue.
+
 <pre><code class="php">
-// Removes job class 'My_Job' of queue 'default'
-Resque::dequeue('default', ['My_Job']);
-// Removes job class 'My_Job' with Job ID '087df5819a790ac666c9608e2234b21e' of queue 'default'
-Resque::dequeue('default', ['My_Job' => '087df5819a790ac666c9608e2234b21e']);
-// Removes job class 'My_Job' with arguments of queue 'default'
-Resque::dequeue('default', ['My_Job' => array('foo' => 1, 'bar' => 2)]);
+// Removes job class 'Job' of queue 'default'
+Resque::dequeue('default', ['Job']);
+// Removes job class 'Job' with Job ID '087df5819a790ac666c9608e2234b21e' of queue 'default'
+Resque::dequeue('default', ['Job' => '087df5819a790ac666c9608e2234b21e']);
+// Removes job class 'Job' with arguments of queue 'default'
+Resque::dequeue('default', ['Job' => array('foo' => 1, 'bar' => 2)]);
 // Removes multiple jobs
-Resque::dequeue('default', ['My_Job', 'My_Job2']);
+Resque::dequeue('default', ['Job', 'Job2']);
+</code></pre>
+
+<pre><code class="shell">
+# 执行 php resque/Dequeue.php 向 queue 中 push 两个 Job 后
+127.0.0.1:6379> keys *
+1) "resque:job:b52ec60907dff2b44fd3917d5b2a2244:status"
+2) "resque:queues"
+3) "resque:queue:queue-2"
+4) "resque:job:02f9740613acff4704fca5dfdfbefd52:status"
+127.0.0.1:6379> LRANGE resque:queue:queue-2 0 -1
+1) "{\"class\":\"Job\",\"args\":[{\"name\":\"Judith Huang\"}],\"id\":\"02f9740613acff4704fca5dfdfbefd52\",\"queue_time\":1506004349.612935}"
+2) "{\"class\":\"Job\",\"args\":[{\"name\":\"Judith Huang\"}],\"id\":\"b52ec60907dff2b44fd3917d5b2a2244\",\"queue_time\":1506004351.706851}"
+# 执行 php resque/Dequeue.php 将 id 为 02f9740613acff4704fca5dfdfbefd52 的 Job pop 后
+127.0.0.1:6379> LRANGE resque:queue:queue-2 0 -1
+1) "{\"class\":\"Job\",\"args\":[{\"name\":\"Judith Huang\"}],\"id\":\"b52ec60907dff2b44fd3917d5b2a2244\",\"queue_time\":1506004351.706851}"
+127.0.0.1:6379>
 </code></pre>
 
 [slide]
@@ -107,7 +139,9 @@ Resque::dequeue('default', ['My_Job', 'My_Job2']);
 - php-resque has the ability to perform basic status tracking of a queued job. The status information will allow you to check if a job is in the queue, is currently being run, has finished, or has failed.
 - To track the status of a job, pass true as the fourth argument to `Resque::enqueue`. A token used for tracking the job status will be returned
 <pre><code class="php">
-$token = Resque::enqueue('default', 'My_Job', $args, true);
+// $monitor Set to true to be able to monitor the status of a job.
+$trackStatus = true;
+$token = Resque::enqueue('default', 'Job', $args, $trackStatus);
 echo $token;
 // To fetch the status of a job:
 $status = new Resque_Job_Status($token);
@@ -124,37 +158,41 @@ echo $status->get(); // Outputs the status
 
 [slide]
 # Workers
-- Resque workers are rake tasks that run forever.
+Resque workers are rake tasks that run forever.
 
 <pre><code>
-// start a work
-QUEUE=file_serve php bin/resque
 // Running All Queues
-QUEUE='*' bin/resque
-// Running Multiple Workers
-COUNT=5 bin/resque
-// Custom prefix
-PREFIX=my-app-name bin/resque
+QUEUE='*' APP_INCLUDE=jobs/init.php php ../vendor/chrisboulton/php-resque/bin/resque
 </code></pre>
 
-[slide]
-# Event/Hook System
-- php-resque has a basic event system that can be used by your application to customize how some of the php-resque internals behave.
-- You listen in on events (as listed below) by registering with `Resque_Event` and supplying a callback that you would like triggered when the event is raised:
-<pre><code>
-Resque_Event::listen('eventName', [callback]);
+<pre><code class="shell">
+# 启动 Work
+127.0.0.1:6379> keys *
+1) "resque:workers"
+2) "resque:worker:huangjuandeMac-mini.local:8020:queue-2:started"
+127.0.0.1:6379> type resque:workers
+set
+127.0.0.1:6379> SMEMBERS resque:workers
+1) "huangjuandeMac-mini.local:8020:queue-2"
+# 执行 php resque/Dequeue.php 向 queue 中 push 一个 Job 后
+127.0.0.1:6379> keys *
+1) "resque:job:2f4abe6e7e15f47d1007ea7bcefa763b:status"
+2) "resque:stat:processed:huangjuandeMac-mini.local:6375:queue-2"
+3) "resque:worker:huangjuandeMac-mini.local:8020:queue-2:started"
+4) "resque:workers"
+5) "resque:stat:processed"
+6) "resque:queues"
+127.0.0.1:6379> get resque:stat:processed:huangjuandeMac-mini.local:6375:queue-2
+"1"
+127.0.0.1:6379> get resque:stat:processed
+"1"
+# 执行 php resque/Dequeue.php 再向 queue 中 push 一个 Job 后
+127.0.0.1:6379> get resque:stat:processed:huangjuandeMac-mini.local:6375:queue-2
+"2"
+127.0.0.1:6379> get resque:stat:processed
+"2"
+127.0.0.1:6379>
 </code></pre>
-
-[slide]
-## Events
-- beforeFirstFork: Called once, as a worker initializes.
-- beforeFork: Called before php-resque forks to run a job.
-- afterFork: Called after php-resque forks to run a job (but before the job is run).    
-- beforePerform: Called before the setUp and perform methods on a job are run.
-- afterPerform: Called after the perform and tearDown methods on a job are run.
-- onFailure: Called whenever a job fails.
-- beforeEnqueue: Called immediately before a job is enqueued using the Resque::enqueue method.
-- afterEnqueue: Called after a job has been queued using the Resque::enqueue method. 
 
 [slide]
 # php-resque-scheduler
@@ -163,13 +201,28 @@ Resque_Event::listen('eventName', [callback]);
 
 [slide]
 # Delayed Jobs
-- Delayed jobs are one-off jobs that you want to be put into a queue at some point in the future. The classic example is sending an email
+Delayed jobs are one-off jobs that you want to be put into a queue at some point in the future. The classic example is sending an email
 <pre><code class="php">
 require 'Resque/Resque.php';
 require 'ResqueScheduler/ResqueScheduler.php';
 $in = 3600;
 $args = array('id' => $user->id);
 ResqueScheduler::enqueueIn($in, 'email', 'SendFollowUpEmail', $args);
+</code></pre>
+
+<pre><code class="shell">
+127.0.0.1:6379> keys *
+1) "resque:delayed_queue_schedule"
+2) "resque:delayed:1506008557"
+127.0.0.1:6379> type resque:delayed:1506008557
+list
+127.0.0.1:6379> type resque:delayed_queue_schedule
+zset
+127.0.0.1:6379> LRANGE resque:delayed:1506008557 0 -1
+1) "{\"class\":\"Job\",\"args\":[{\"name\":\"Judith Huang\"}],\"queue\":\"default\"}"
+127.0.0.1:6379> ZREVRANGE resque:delayed_queue_schedule 0 -1
+1) "1506008557"
+127.0.0.1:6379>
 </code></pre>
 
 [slide]
@@ -182,6 +235,25 @@ $time = 1332067214;
 ResqueScheduler::enqueueAt($time, 'email', 'SendFollowUpEmail', $args);
 $datetime = new DateTime('2012-03-18 13:21:49');
 ResqueScheduler::enqueueAt($datetime, 'email', 'SendFollowUpEmail', $args);
+</code></pre>
+
+[slide]
+# Worker
+
+<pre><code class="shell">
+$worker = new ResqueScheduler_Worker();
+$worker->work();
+127.0.0.1:6379> keys *
+1) "resque:delayed_queue_schedule"
+2) "resque:delayed:1506009749"
+127.0.0.1:6379> keys *
+1) "resque:job:7d399bf6f16ad99380e62a4fb863932b:status"
+2) "resque:queues"
+3) "resque:stat:processed"
+4) "resque:stat:processed:huangjuandeMac-mini.local:6323:default"
+127.0.0.1:6379> get resque:job:7d399bf6f16ad99380e62a4fb863932b:status
+"{\"status\":4,\"updated\":1506009752}"
+127.0.0.1:6379>
 </code></pre>
 
 [slide]

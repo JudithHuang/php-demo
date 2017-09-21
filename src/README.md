@@ -25,7 +25,7 @@ php resque/checkStatus.php $jobId
 
 ```shell
 cd src
-# TODO: queue 被删除, Job 仍然在
+# 注: 如果 $trackStatus 设置为 true , 则不会删掉 job.status 的记录
 php resque/Dequeue.php
 ```
 
@@ -33,7 +33,7 @@ php resque/Dequeue.php
 
 ```shell
 cd src
-QUEUE='*' APP_INCLUDE=jobs/init.php php ../vendor/chrisboulton/php-resque/bin/resque
+QUEUE='default' APP_INCLUDE=jobs/init.php php ../vendor/chrisboulton/php-resque/bin/resque
 # or
 php resque/Work.php
 ```
@@ -59,10 +59,6 @@ php resqueScheduler/Queue.php Job
 ## 启动 Work
 
 ```shell
-# 注: 在 scheduler 下将 Job 放入队列前，要启动两个 Work
-#  - scheduler_work: 把可执行的 Jobs 放入到执行队列中
-#  - resque_work: 执行执行队列中的 Job
 cd src
-# 该 Work 用于把可执行的 Jobs 放入到执行队列中
 php resqueScheduler/Work.php
 ```

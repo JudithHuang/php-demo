@@ -6,7 +6,7 @@ require 'jobs/FailJob.php';
 // Required if redis is located elsewhere
 Resque::setBackend('localhost:6379');
 
-$in = 5;
+$in = 15;
 $args = array('name' => 'Judith Huang');
 ResqueScheduler::enqueueIn($in, 'default', $argv[1], $args);
 
