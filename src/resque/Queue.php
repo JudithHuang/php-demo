@@ -9,5 +9,5 @@ Resque::setBackend('localhost:6379');
 $args = array('name' => 'Judith Huang');
 // $monitor Set to true to be able to monitor the status of a job.
 $trackStatus = true;
-$token = Resque::enqueue('queue-2', $argv[1], $args, $trackStatus);
+$token = Resque::enqueue('default', $argv[1], $args, $trackStatus);
 echo 'Job\'s token is: '.$token;

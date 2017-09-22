@@ -43,6 +43,16 @@
 
 </article></section></slide>
 <slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
+<h1>Basic</h1>
+<ul>
+<li>Queue</li>
+<li>Job</li>
+<li>Worker</li>
+<li>Job&#39;s Status</li>
+</ul>
+
+</article></section></slide>
+<slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
 <h1>Queue sytem</h1>
 <img src="./images/queue-system.jpg" alt="queue-system" title="queue-system1">
 
@@ -96,7 +106,7 @@ list
 127.0.0.1:6379> LRANGE resque:queue:default 0 -1
 1) "{\"class\":\"Job\",\"args\":[{\"name\":\"Judith Huang\"}],\"id\":\"b10f67f4a41578255f58afdf31632f7e\",\"queue_time\":1505993558.822553}"
 2) "{\"class\":\"Job\",\"args\":[{\"name\":\"Judith Huang\"}],\"id\":\"838bdb9a4bb550cb7d9baacd54b42476\",\"queue_time\":1505993776.0565}"
-127.0.0.1:6379> 
+127.0.0.1:6379>
 </code></pre>
 </article></section></slide>
 <slide class="slide"><section class="slide-wrapper"><article>
@@ -184,7 +194,7 @@ echo $status->get(); // Outputs the status
 </article></section></slide>
 <slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
 <h1>Workers</h1>
-<p>Resque workers are rake tasks that run forever.</p>
+<p>Resque workers are tasks that run forever.</p>
 <pre><code>
 // Running All Queues
 QUEUE='*' APP_INCLUDE=jobs/init.php php ../vendor/chrisboulton/php-resque/bin/resque
@@ -308,8 +318,8 @@ $worker->work();
 </article></section></slide>
 <slide class="slide"><section class="slide-wrapper"><article class="flexbox vcenter">
 <h1>Event/Hook System</h1>
+<p>php-resque-scheduler uses the same event system used by php-resque and exposes the following events.</p>
 <ul>
-<li>php-resque-scheduler uses the same event system used by php-resque and exposes the following events.</li>
 <li>afterSchedule: Called after a job has been added to the schedule.</li>
 <li>beforeDelayedEnqueue: Called immediately after a job has been pulled off the delayed queue and right before the job is added to the queue in resque.</li>
 </ul>

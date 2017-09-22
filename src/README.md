@@ -33,7 +33,7 @@ php resque/Dequeue.php
 
 ```shell
 cd src
-QUEUE='default' APP_INCLUDE=jobs/init.php php ../vendor/chrisboulton/php-resque/bin/resque
+QUEUE='*' APP_INCLUDE=jobs/init.php php ../vendor/chrisboulton/php-resque/bin/resque
 # or
 php resque/Work.php
 ```
@@ -60,5 +60,6 @@ php resqueScheduler/Queue.php Job
 
 ```shell
 cd src
+QUEUE='*' APP_INCLUDE=jobs/init.php php ../vendor/chrisboulton/php-resque/bin/resque
 php resqueScheduler/Work.php
 ```

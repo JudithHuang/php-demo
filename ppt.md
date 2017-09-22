@@ -7,7 +7,7 @@ theme: moon
 usemathjax: yes
 
 [slide]
-# php-resque 
+# php-resque
 # php-resque-scheduler
 
 [slide]
@@ -18,10 +18,18 @@ usemathjax: yes
 [slide]
 # Background
 
-- Resque was pioneered and is developed by the fine folks at GitHub, and written in Ruby. What you're seeing here is an almost direct port of the Resque worker and enqueue system to PHP.  
+- Resque was pioneered and is developed by the fine folks at GitHub, and written in Ruby. What you're seeing here is an almost direct port of the Resque worker and enqueue system to PHP.
 - For more information on Resque, visit the official GitHub project: https://github.com/resque/resque
 - For further information, see the launch post on the GitHub blog: http://github.com/blog/542-introducing-resque
 - The PHP port does NOT include its own web interface for viewing queue stats, as the data is stored in the exact same expected format as the Ruby version of Resque.
+
+[slide]
+# Basic
+
+- Queue
+- Job
+- Worker
+- Job's Status
 
 [slide]
 # Queue sytem
@@ -77,7 +85,7 @@ list
 127.0.0.1:6379> LRANGE resque:queue:default 0 -1
 1) "{\"class\":\"Job\",\"args\":[{\"name\":\"Judith Huang\"}],\"id\":\"b10f67f4a41578255f58afdf31632f7e\",\"queue_time\":1505993558.822553}"
 2) "{\"class\":\"Job\",\"args\":[{\"name\":\"Judith Huang\"}],\"id\":\"838bdb9a4bb550cb7d9baacd54b42476\",\"queue_time\":1505993776.0565}"
-127.0.0.1:6379> 
+127.0.0.1:6379>
 </code></pre>
 
 [slide]
@@ -158,7 +166,7 @@ echo $status->get(); // Outputs the status
 
 [slide]
 # Workers
-Resque workers are rake tasks that run forever.
+Resque workers are tasks that run forever.
 
 <pre><code>
 // Running All Queues
@@ -273,7 +281,7 @@ $worker->work();
 
 [slide]
 # Event/Hook System
-- php-resque-scheduler uses the same event system used by php-resque and exposes the following events.
+php-resque-scheduler uses the same event system used by php-resque and exposes the following events.
 - afterSchedule: Called after a job has been added to the schedule.
 - beforeDelayedEnqueue: Called immediately after a job has been pulled off the delayed queue and right before the job is added to the queue in resque.
 
