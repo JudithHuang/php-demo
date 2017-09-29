@@ -3,7 +3,8 @@
     "description": "This is demo of resque",
     "require": {
         "chrisboulton/php-resque": "dev-master",
-        "chrisboulton/php-resque-scheduler": "dev-master"
+        "chrisboulton/php-resque-scheduler": "dev-master",
+         "aliyuncs/oss-sdk-php": "~2.0"
     },
     "authors": [
         {

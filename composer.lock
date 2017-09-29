@@ -4,8 +4,49 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "17760f98e427d3c7b69b23a5e463e36d",
+    "content-hash": "07b2c4029e9e7403e73040bbad46dbd1",
     "packages": [
+        {
+            "name": "aliyuncs/oss-sdk-php",
+            "version": "v2.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/aliyun/aliyun-oss-php-sdk.git",
+                "reference": "0b9b85b6c5c38cfc4ef3b0205a5a62d1e36acf2e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/aliyun/aliyun-oss-php-sdk/zipball/0b9b85b6c5c38cfc4ef3b0205a5a62d1e36acf2e",
+                "reference": "0b9b85b6c5c38cfc4ef3b0205a5a62d1e36acf2e",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.0",
+                "satooshi/php-coveralls": "~1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "OSS\\": "src/OSS"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Aliyuncs",
+                    "homepage": "http://www.aliyun.com"
+                }
+            ],
+            "description": "Aliyun OSS SDK for PHP",
+            "homepage": "http://www.aliyun.com/product/oss/",
+            "time": "2017-04-25T09:15:12+00:00"
+        },
         {
             "name": "chrisboulton/php-resque",
             "version": "dev-master",
@@ -100,16 +141,16 @@
         },
         {
             "name": "colinmollenhour/credis",
-            "version": "1.8.2",
+            "version": "1.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/colinmollenhour/credis.git",
-                "reference": "9c14b4bb0779127638a17dd8aab8f05f28c6df43"
+                "reference": "e8e9b2081fb9b61097486dcaf8b6c11a7399da2d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/colinmollenhour/credis/zipball/9c14b4bb0779127638a17dd8aab8f05f28c6df43",
-                "reference": "9c14b4bb0779127638a17dd8aab8f05f28c6df43",
+                "url": "https://api.github.com/repos/colinmollenhour/credis/zipball/e8e9b2081fb9b61097486dcaf8b6c11a7399da2d",
+                "reference": "e8e9b2081fb9b61097486dcaf8b6c11a7399da2d",
                 "shasum": ""
             },
             "require": {
@@ -136,7 +177,7 @@
             ],
             "description": "Credis is a lightweight interface to the Redis key-value store which wraps the phpredis library when available for better performance.",
             "homepage": "https://github.com/colinmollenhour/credis",
-            "time": "2017-07-05T15:32:38+00:00"
+            "time": "2017-09-26T05:03:25+00:00"
         },
         {
             "name": "psr/log",
